@@ -73,9 +73,11 @@ async def get_team_ids():
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 async def fetch_rosters():
+    # will be used to populate our players db, does not contain statistics, but contains general info about player like name, id, 
     team_ids = await get_team_ids()
     rosters = []
-    
+    url = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/roster'
+
 
 async def fetch_team_stats():
     # static data, can be refreshed at least once a day, or once the teams game ends

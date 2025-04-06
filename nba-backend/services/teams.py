@@ -36,13 +36,6 @@ async def fetch_teams():
             logger.error(f"Fetch failed: {resp.status}")
     return False
 
-async def fetch_team_stats():
-    # static data, can be refreshed at least once a day, or once the teams game ends
-    # different total stats for teams such as shot percentage, total 2 pointers, total blocks, etc. may be able to specify year in the call to get past data
-    id = 2 # one team for now but need to loop through all team ids, (1-30 ?) and fetch stats
-    url = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/statistics' # 2 denotes id for team, need to 
-
-@app.get("/teams")
 async def get_teams():
     try:
         async with async_session() as db:
@@ -64,4 +57,30 @@ async def get_teams():
     except Exception as e:
         logger.error(f"Error in get_teams: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+async def get_team_ids():
+    try:
+        async with async_session() as db:
+            result = await db.execute('SELECT id FROM teams')
+            team_ids = [row[0]for row in result.fetchall()]
+            if not team_ids and await fetch_teams():
+                result = await db.execute('SELECT id FROM teams')
+                team_ids = [row[0] for row in result.fetchall()]
+            logger.info(f"Returning {len(team_ids)} team IDs")
+            return team_ids
+    except Exception as e:
+        logger.error(f"Error in get_team_ids: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+async def fetch_rosters():
+    team_ids = await get_team_ids()
+    rosters = []
+    
+
+async def fetch_team_stats():
+    # static data, can be refreshed at least once a day, or once the teams game ends
+    # different total stats for teams such as shot percentage, total 2 pointers, total blocks, etc. may be able to specify year in the call to get past data
+    id = 2 # one team for now but need to loop through all team ids, (1-30 ?) and fetch stats
+    url = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/statistics' # 2 denotes id for team, need to 
+
 
